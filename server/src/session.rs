@@ -102,7 +102,7 @@ pub(crate) async fn start_webrtc_session(sdp: String, upstream_addr: String) -> 
                             eprintln!("Received 0 bytes from upstream {d_upstream_addr}, disconnect");
                             break;
                         }
-                        println!("Received: {}", String::from_utf8_lossy(&buffer[..n]));
+                        // println!("Received: {}", String::from_utf8_lossy(&buffer[..n]));
                         let imm_buffer = bytes::Bytes::copy_from_slice(&mut buffer[..n]);
                         let send_result = d2.send(&imm_buffer).await;
                         if let Err(_err) = send_result {
@@ -115,8 +115,8 @@ pub(crate) async fn start_webrtc_session(sdp: String, upstream_addr: String) -> 
 
             // Register text message handling
             d.on_message(Box::new(move |msg: DataChannelMessage| {
-                let msg_str = String::from_utf8(msg.data.to_vec()).unwrap();
-                println!("Message from DataChannel '{d_label}': '{msg_str}'");
+                // let msg_str = String::from_utf8(msg.data.to_vec()).unwrap();
+                // println!("Message from DataChannel '{d_label}': '{msg_str}'");
                 let msg_bytes = msg.data.to_owned();
                 let writer_clone = Arc::clone(&writer);
                 Box::pin(async move {
