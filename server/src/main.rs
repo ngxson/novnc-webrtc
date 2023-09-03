@@ -60,7 +60,7 @@ async fn main() -> Result<(), hyper::Error> {
     let mut app = Command::new("novnc-webrtc")
         .version("0.1.0")
         .author("Xuan Son NGUYEN <contact@ngxson.com>")
-        .about("noVNC with WebRTC as transport layer. This application acts as a proxy to connect between Browser and VNC server (via TCP connection).\n\nIn short: Browser <== WebRTC ==> This app <== TCP ==> VNC server")
+        .about("noVNC with WebRTC. This application acts as a proxy to connect between Browser and VNC server.")
         .setting(AppSettings::DeriveDisplayOrder)
         .subcommand_negates_reqs(true)
         .arg(

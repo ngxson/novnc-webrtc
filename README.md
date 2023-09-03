@@ -1,4 +1,4 @@
-# noVNC with WebRTC as transport layer
+# noVNC with WebRTC
 
 ```
 ⚠️ This project is in very alpha version, bugs are expected
