@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC Test</title>
+  <style>
+    textarea {
+      height: 10em;
+      width: 25em;
+    }
+  </style>
+</head>
+<body>
+  Local Session Description <textarea id="localSessionDescription" readonly="true"></textarea> <br />
+  Remote Session Description: <textarea id="remoteSessionDescription"></textarea> <br/>
+  <button onclick="window.startSession()"> Start Session </button> <br />
+  <br />
+
+  Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
+  <button onclick="window.sendMessage()"> Send Message </button> <br />
+
+  <div id="logs"></div>
+
+  <script>
+    let pc = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: 'stun:stun.l.google.com:19302'
+        }
+      ]
+    })
+    let log = msg => {
+      document.getElementById('logs').innerHTML += msg + '<br>'
+    }
+
+    let sendChannel = pc.createDataChannel('proxy', { ordered: true });
+    sendChannel.onclose = () => console.log('sendChannel has closed')
+    sendChannel.onopen = () => console.log('sendChannel has opened')
+    sendChannel.onmessage = async (e) => {
+      const text = await e.data.text();
+      log(`Message from DataChannel '${sendChannel.label}' payload '${text}'`);
+    }
+
+    pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
+    pc.onicecandidate = event => {
+      if (event.candidate === null) {
+        document.getElementById('localSessionDescription').value = JSON.stringify(pc.localDescription);
+      }
+    }
+
+    pc.onnegotiationneeded = e =>
+      pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log)
+
+    window.sendMessage = () => {
+      let message = document.getElementById('message').value
+      if (message === '') {
+        return alert('Message must not be empty')
+      }
+
+      sendChannel.send(message)
+    }
+
+    window.startSession = async () => {
+      const localSd = document.getElementById('localSessionDescription').value;
+      const rawResponse = await fetch('http://localhost:8000/sdp', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: localSd,
+      });
+      const sd = await rawResponse.json();
+      console.log(sd)
+      // return;
+
+      document.getElementById('remoteSessionDescription').value = JSON.stringify(sd)
+
+      try {
+        pc.setRemoteDescription(new RTCSessionDescription(sd))
+      } catch (e) {
+        alert(e)
+      }
+    }
+
+  </script>
+</body>
+</html>
