@@ -1,0 +1,3 @@
+[submodule "webui_vanilla/src/noVNC"]
+	path = webui_vanilla/src/noVNC
+	url = https://github.com/novnc/noVNC.git
