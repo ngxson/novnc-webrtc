@@ -5,6 +5,7 @@ use std::convert::Infallible;
 use anyhow::Result;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{header, Body, Method, Request, Response, Server, StatusCode};
+use clap::{AppSettings, Arg, Command};
 
 mod session;
 mod config;
@@ -16,9 +17,14 @@ async fn body_to_string(req: Request<Body>) -> String {
 
 async fn remote_handler(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let upstream_addr = config::get(config::UPSTREAM_ADDR);
+    let index_html = include_bytes!("../../webui_vanilla/dist/index.html");
+
+    println!("Upstream address: {upstream_addr}");
+
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") => {
-            Ok(Response::new(Body::from("Hello, World!")))
+            let reponse_str = String::from_utf8_lossy(index_html);
+            Ok(Response::new(Body::from(reponse_str)))
         },
         (&Method::POST, "/sdp") => {
             let payload: String = body_to_string(req).await;
@@ -51,6 +57,50 @@ async fn remote_handler(req: Request<Body>) -> Result<Response<Body>, Infallible
 
 #[tokio::main]
 async fn main() -> Result<(), hyper::Error> {
+    let mut app = Command::new("novnc-webrtc")
+        .version("0.1.0")
+        .author("Xuan Son NGUYEN <contact@ngxson.com>")
+        .about("noVNC with WebRTC as transport layer. This application acts as a proxy to connect between Browser and VNC server (via TCP connection).\n\nIn short: Browser <== WebRTC ==> This app <== TCP ==> VNC server")
+        .setting(AppSettings::DeriveDisplayOrder)
+        .subcommand_negates_reqs(true)
+        .arg(
+            Arg::new("FULLHELP")
+                .help("Prints more detailed help information")
+                .long("help"),
+        )
+        .arg(
+            Arg::new("listen")
+                .takes_value(true)
+                .default_value("0.0.0.0:6901")
+                .long("listen")
+                .short('l')
+                .help("Address for server to listen."),
+        )
+        .arg(
+            Arg::new("upstream")
+                .takes_value(true)
+                .default_value("127.0.0.1:5901")
+                .long("upstream")
+                .short('u')
+                .help("Upstream addressof VNC server"),
+        );
+    let matches = app.clone().get_matches();
+    if matches.is_present("FULLHELP") {
+        app.print_long_help().unwrap();
+        std::process::exit(0);
+    }
+    if matches.is_present("listen") {
+        let v: &str = matches.value_of("listen").unwrap();
+        config::set(config::LISTEN_ADDR, String::from(v));
+    }
+    if matches.is_present("upstream") {
+        let v: &str = matches.value_of("upstream").unwrap();
+        config::set(config::UPSTREAM_ADDR, String::from(v));
+    }
+    let upstream_addr = config::get(config::UPSTREAM_ADDR);
+    println!("Upstream address: {upstream_addr}");
+
+    // main app
     let addr_str = config::get(config::LISTEN_ADDR);
     let addr = SocketAddr::from_str(&config::get(config::LISTEN_ADDR)).unwrap();
     let service =

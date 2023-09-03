@@ -2,13 +2,15 @@ const DEFAULT_ICE_SERVERS = [{
   urls: 'stun:stun.l.google.com:19302'
 }];
 
+const DEFAULT_SDP_URL = '/sdp';
+
 /**
  * Create a new RTCPeerConnection, then open a RTCDataChannel
  * @param sdpUrl 
  * @param iceServers 
  * @returns 
  */
-export function getRTCDataChannel(sdpUrl: string, iceServers?: any): Promise<RTCDataChannel> {
+export function getRTCDataChannel(sdpUrl?: string, iceServers?: any): Promise<RTCDataChannel> {
   // @ts-ignore
   return new Promise((resolve, reject) => {
     let pc = new RTCPeerConnection({
@@ -19,7 +21,7 @@ export function getRTCDataChannel(sdpUrl: string, iceServers?: any): Promise<RTC
       if (event.candidate === null) {
         const localSD = pc.localDescription;
         console.log({ localSD });
-        const rawResponse = await fetch(sdpUrl, {
+        const rawResponse = await fetch(sdpUrl ?? DEFAULT_SDP_URL, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',

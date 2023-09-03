@@ -1003,7 +1003,7 @@ const UI = {
 
     /// Wrapper using WebRTC connector
     async connect(event, password) {
-        UI.dataChannel = await getRTCDataChannel('http://localhost:8000/sdp');
+        UI.dataChannel = await getRTCDataChannel();
         return UI._connect(event, password);
     },
 

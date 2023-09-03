@@ -8,8 +8,8 @@ pub const UPSTREAM_ADDR: u8 = 1;
 lazy_static! {
   static ref HASHMAP: Mutex<HashMap<u8, String>> = Mutex::new({
       let mut m = HashMap::new();
-      m.insert(LISTEN_ADDR, "0.0.0.0:8000".to_string() );
-      m.insert(UPSTREAM_ADDR, "172.17.0.4:5901".to_string() );
+      m.insert(LISTEN_ADDR, "".to_string() );
+      m.insert(UPSTREAM_ADDR, "".to_string() );
       m
   });
 }
