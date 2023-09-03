@@ -9,7 +9,13 @@
 noVNC, but it uses WebRTC instead of Websocket
 
 ```
-Browser     <== WebRTC ==>     This app     <== TCP ==>     VNC server
+
+   ┌───────────┐              ┌────────────┐           ┌──────────────┐
+   │           │              │            │           │              │
+   │  Browser  │    WebRTC    │  This app  │    TCP    │  VNC Server  │
+   │           │  ──────────► │            │ ────────► │              │
+   └───────────┘              └────────────┘           └──────────────┘
+
 ```
 
 - The server app is built on rust, see `/server`
